@@ -1,0 +1,70 @@
+--- 0 seconds
+
+
+### Cleaning old files (to prevent this, export DEBUG=1) ###
+rm -f objects/Ambassador.o objects/Game.o objects/Assassin.o objects/Player.o objects/Contessa.o objects/Duke.o objects/Captain.o *.o test* 
+rm -f StudentTest*.cpp
+
+
+### Check 3: all tests should pass
+! make -f Makefile test
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile TestRunner.cpp -o TestRunner.o
+curl https://raw.githubusercontent.com/RazGavrieli/Board-Game-Coup/master/Test.cpp > StudentTest1.cpp
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  9096  100  9096    0     0  32485      0 --:--:-- --:--:-- --:--:-- 32602
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile StudentTest1.cpp -o StudentTest1.o
+curl https://raw.githubusercontent.com/Esther-Bi/B-HW4-Test/main/Test.cpp > StudentTest2.cpp
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  7683  100  7683    0     0  22141      0 --:--:-- --:--:-- --:--:-- 22141
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile StudentTest2.cpp -o StudentTest2.o
+curl https://raw.githubusercontent.com/BenjaminSaldman/coup-a/main/Test.cpp > StudentTest3.cpp
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  4574  100  4574    0     0  16049      0 --:--:-- --:--:-- --:--:-- 16049
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile StudentTest3.cpp -o StudentTest3.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Ambassador.cpp -o objects/Ambassador.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Game.cpp -o objects/Game.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Assassin.cpp -o objects/Assassin.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Player.cpp -o objects/Player.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Contessa.cpp -o objects/Contessa.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Duke.cpp -o objects/Duke.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources --compile sources/Captain.cpp -o objects/Captain.o
+clang++-9 -std=c++2a -Werror -Wsign-conversion -Isources TestRunner.o StudentTest1.o StudentTest2.o StudentTest3.o objects/Ambassador.o objects/Game.o objects/Assassin.o objects/Player.o objects/Contessa.o objects/Duke.o objects/Captain.o -o test
+! timeout 50 ./test
+[doctest] doctest version is "2.3.7"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:     19 |     19 passed |      0 failed |      0 skipped
+[doctest] assertions:    321 |    321 passed |      0 failed |
+[doctest] Status: SUCCESS!
+--- 6 seconds
+### Score 3: 100
+
+
+### Check 4: clang-tidy should run without warnings in user code
+! timeout 50 make -f Makefile tidy
+clang-tidy sources/Ambassador.cpp sources/Game.cpp sources/Assassin.cpp sources/Player.cpp sources/Contessa.cpp sources/Duke.cpp sources/Captain.cpp -extra-arg=-std=c++2a -checks=bugprone-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*,readability-*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory --warnings-as-errors=* --
+3516 warnings generated.
+7030 warnings generated.
+10562 warnings generated.
+14115 warnings generated.
+17655 warnings generated.
+21165 warnings generated.
+24681 warnings generated.
+Suppressed 24681 warnings (24681 in non-user code).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+--- 14 seconds
+### Score 4: 100
+
+
+### Check 5: valgrind should run without errors
+! timeout 50 make -f Makefile valgrind
+valgrind --tool=memcheck -v --leak-check=full --show-leak-kinds=all  --error-exitcode=99 ./test 2>&1 | { egrep "lost| at " || true; }
+--- 14 seconds
+### Score 5: 100
+
+
+Grade: 100
+
