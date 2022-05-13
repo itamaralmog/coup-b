@@ -14,7 +14,6 @@ namespace coup{
         auto itPos = this->game_g->names.begin() + p.place;
         this->game_g->names.insert(itPos,p.arch->name);
         p.arch->dead=false;
-        p.arch =&p;
+        p.arch=&p;
     }
-
 }

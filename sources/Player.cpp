@@ -4,22 +4,17 @@ namespace coup
 {
     Player::Player(Game &game, string const &name){
         if(game.names.size()+1 > SIX){
-            throw std::out_of_range{"Fail"};
+            throw std::out_of_range{"To many players"};
         }
         this->dead = false;
         this->arch = this;
         this->place=-1;
-        const char ch = ' ';
-        unsigned long space = 0;
-        this->name = name;
-        game.names.push_back(this->name); 
+        this->name = name; 
         this->move = No_move;
         this->c=0;
+        this->game_g = &game;
         game.started = true;
-        if(!game.turn_init){
-                game.tt = this->name;
-                game.turn_init = true;
-        }
+        game.names.push_back(this->name);
         game.player_s.push_back(*this);
         for(unsigned long i = 0 ; i < game.player_s.size(); i++){
             if(game.player_s.at(i).move != No_move){
@@ -28,54 +23,22 @@ namespace coup
             game.tt = game.names.at(0);
             game.player_s.at(i).game_g = &game;
         }
-        this->game_g = &game;
     }
     void Player::income(){
-        Player p = *this;
-        if(p.game_g->names.size() <2){
-            throw "to lower players";
-        }
-        if(p.c > TEN){
-            throw "to many coins";
-        }
-        p.game_g->started = false;
-        std::vector<string>::iterator it = std::find(p.game_g->names.begin(), p.game_g->names.end(), p.name);
-        int index = std::distance(p.game_g->names.begin(), it);
-        int ind = index+1;
-        int si = (int) p.game_g->names.size();
-        int t = ind % si;
-        if(p.name != p.game_g->tt){
-            throw "turn jump!";
-        }
+        this->calc_turn();
+        this->income_aid(Income);
         for(unsigned long i = 0 ; i < this->game_g->player_s.size(); i++){
             if(this->game_g->player_s.at(i).name == this->name){
                 this->game_g->player_s.at(i).move = Income;
             }
         }
-        this-> game_g->tt = p.game_g->names.at((unsigned long)t);
-        this->c+=1;
-        this->move = Income;
     }
     void Player::foreign_aid(){
-        Player p = *this;
-        if(p.game_g->names.size() <2){
-            throw "to lower players";
-        }
-        if(p.c > TEN){
+        if(this->c > TEN){
             throw "to many coins";
         }
-        p.game_g->started = false;
-        std::vector<string>::iterator it = std::find(p.game_g->names.begin(), p.game_g->names.end(), p.name);
-        int index = std::distance(p.game_g->names.begin(), it);
-        int ind = index+1;
-        int si = (int) p.game_g->names.size();
-        int t = ind % si;
-        if(p.name != p.game_g->tt){
-            throw "turn jump!";
-        }
-        this-> game_g->tt = p.game_g->names.at((unsigned long)t);
-        this->c+=2;
-        this->move = Foreign_aid;
+        this->income_aid(Foreign_aid);
+        this->calc_turn();
     }
     void Player::coup(Player &p){
         if(p.dead){
@@ -83,25 +46,41 @@ namespace coup
         }
         if(this->c >= SEVEN){
             p.dead =true;
-            p.game_g->started = false;
             std::vector<string>::iterator it1 = std::find(p.game_g->names.begin(), p.game_g->names.end(), p.name);
             this->game_g->names.erase(it1);
-            Player p = *this;
-            std::vector<string>::iterator it = std::find(p.game_g->names.begin(), p.game_g->names.end(), p.name);
-            int index = std::distance(p.game_g->names.begin(), it);
-            int ind = index+1;
-            int si = (int) p.game_g->names.size();
-            int t = ind % si;
-            if(p.name != p.game_g->tt){
-                throw "turn jump!";
-            }
-            this-> game_g->tt = p.game_g->names.at((unsigned long)t);
+            this->calc_turn();
             this->c-=SEVEN;
             this->move = Coup;
         }
         else{
-            throw "not enoth coins";
+            throw "not enough coins";
         }
+    }
+    void Player::income_aid(int m){
+        if(this->game_g->names.size() <2){
+            throw "to lower players";
+        }
+        int con = 0;
+        if(m == Income){
+            con = 1;
+        }
+        else{
+            con = 2;
+        }
+        this->c+=con;
+        this->move = m;
+    }
+    void Player::calc_turn() const{
+        this->game_g->started = false;
+        std::vector<string>::iterator it = std::find(this->game_g->names.begin(), this->game_g->names.end(), this->name);
+        int index = std::distance(this->game_g->names.begin(), it);
+        int ind = index+1;
+        int si = (int) this->game_g->names.size();
+        int t = ind % si;
+        if(this->name != this->game_g->tt){
+            throw "turn jump!";
+        }
+        this-> game_g->tt = this->game_g->names.at((unsigned long)t);
     }
     std::string Player::role(){
         return this->r;
